@@ -43,7 +43,7 @@ ssize_t irc_send_raw(irc_session_t* s, const char* format, ...) {
 	/* TODO: */
 	va_end(ap);
 	int nwrote = irc_socket_send(s->sockfd, buffer, n);
-#ifdef IRC_DEBUG
+#ifdef IRC_DEBUG_MODE
 	udbug("irc_send_raw(): wrote %d bytes into s->sockfd.", nwrote);
 #endif
 	return nwrote;
@@ -51,7 +51,7 @@ ssize_t irc_send_raw(irc_session_t* s, const char* format, ...) {
 
 
 int irc_connect(irc_session_t* s) {
-#ifdef IRC_DEBUG
+#ifdef IRC_DEBUG_MODE
 	udebug("irc_connect(): connecting to %s:%s", s->server, s->portno);
 #endif
 	/* RFC 1459:
@@ -63,14 +63,14 @@ int irc_connect(irc_session_t* s) {
 	if (s->sockfd == -1) {
 		return -1; // FIXME: proper error messages
 	}
-#ifdef IRC_DEBUG
+#ifdef IRC_DEBUG_MODE
 	udebug("irc_connect() registering as NICK : %s USER: %s PASS: %s", s->nick, s->nick, s->password);
 #endif
 	if (s->password)
 		irc_send_raw(s, "PASS %s \r\n", s->password);
 	irc_send_raw(s, "NICK %s \r\n", s->nick);
 	irc_send_raw(s, "USER %s * * : AAAA\r\n", s->nick);
-#ifdef IRC_DEBUG
+#ifdef IRC_DEBUG_MODE
 	udebug("irc_connect(), sucessfully connected.");
 #endif
 	/* some irc servers require that we ping them first */
@@ -145,7 +145,7 @@ int irc_parse_msg(char* buffer, irc_msg_t* msg, int lfpos) {
 
 		*prefix_end = '\0';
 		p = prefix_end + 1;
-#ifdef IRC_DEBUG
+#ifdef IRC_DEBUG_MODE
 		udebug("msg->prefix_name = %s, msg->prefix_user = %s, msg->prefix_host = %s", msg->prefix_name, msg->prefix_user, msg->prefix_host);
 #endif
 	}
@@ -153,7 +153,7 @@ int irc_parse_msg(char* buffer, irc_msg_t* msg, int lfpos) {
 	char *params_start = irc_str_skip_to(p, ' ');
 
 	if (!params_start) {
-#ifdef IRC_DEBUG_MOD
+#ifdef IRC_DEBUG_MODE
 		uerror("we don't have params_start.");
 #endif
 		goto invalid_msg;
@@ -203,7 +203,7 @@ int irc_parse_msg(char* buffer, irc_msg_t* msg, int lfpos) {
 invalid_msg:
 
 
-#ifdef IRC_DEBUG
+#ifdef IRC_DEBUG_MODE
 	uerror("invalid message(%s)", buffer);
 #endif
 

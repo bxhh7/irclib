@@ -83,4 +83,4 @@ void irc_main_loop(irc_session_t* s);
 void irc_send_join(irc_session_t* s, const char *channel);
 void irc_send_privmsg(irc_session_t* s, const char *guy, const char *msg);
 void irc_send_nick(irc_session_t* s, const char *nick);
-void irc_sendf_privmsg(irc_session_t* s, const char *guy, const char *format, ...);
+void irc_sendv_privmsg(irc_session_t* s, const char *guy, const char *format, ...);
