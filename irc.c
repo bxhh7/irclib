@@ -54,8 +54,6 @@ int irc_connect(irc_session_t* s) {
 #ifdef IRC_DEBUG
 	udebug("irc_connect(): connecting to %s:%s", s->server, s->portno);
 #endif
-	/* create/connect the socket, send the messages, see if it was a success */
-	// we have to use getaddrinfo and stuff, i think i wrote it somewhere right?
 	/* RFC 1459:
 	 * The recommended order for a client to register is as follows:
 	 * 1. Pass message
