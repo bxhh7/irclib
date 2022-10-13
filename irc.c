@@ -213,7 +213,7 @@ invalid_msg:
 	return -1;
 }
 
-int irc_process_msg(irc_session_t *s, irc_msg_t *m) { //call the right even handler
+int irc_process_msg(irc_session_t *s, irc_msg_t *m) { /* call the right event handler, this is where you can handle more of the irc protocol */
 	int32_t cmd = WORDL(m->cmd[0], m->cmd[1], m->cmd[2], m->cmd[3]);
 	int ret = 0;
 
