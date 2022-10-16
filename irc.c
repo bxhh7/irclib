@@ -19,6 +19,7 @@ void die(const char* msg) {
 int irc_init_session(irc_session_t* s, const char* serv, const char* portno, const char* nick, const char* pass, irc_event_handler_set_t* es) {
 
 	memset(s, 0, sizeof(irc_session_t));
+	memset(es, 0, sizeof(irc_event_handler_set_t));
 
 	if (serv == NULL || portno == NULL || nick == NULL)
 		return -1;
@@ -44,7 +45,7 @@ ssize_t irc_send_raw(irc_session_t* s, const char* format, ...) {
 	va_end(ap);
 	int nwrote = irc_socket_send(s->sockfd, buffer, n);
 #ifdef IRC_DEBUG_MODE
-	udbug("irc_send_raw(): wrote %d bytes into s->sockfd.", nwrote);
+	udebug("irc_send_raw(): wrote %d bytes into s->sockfd.", nwrote);
 #endif
 	return nwrote;
 }
@@ -248,6 +249,7 @@ int irc_process_msg(irc_session_t *s, irc_msg_t *m) { /* call the right event ha
 		case WORDL('J', 'O', 'I', 'N'):
 			if (s->event_handlers.join_handler)
 				ret = s->event_handlers.join_handler(s, m);
+			break;
 	}
 	return ret;
 }
