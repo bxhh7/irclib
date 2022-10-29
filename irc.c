@@ -19,7 +19,6 @@ void die(const char* msg) {
 int irc_init_session(irc_session_t* s, const char* serv, const char* portno, const char* nick, const char* pass, irc_event_handler_set_t* es) {
 
 	memset(s, 0, sizeof(irc_session_t));
-	memset(es, 0, sizeof(irc_event_handler_set_t));
 
 	if (serv == NULL || portno == NULL || nick == NULL)
 		return -1;
@@ -216,6 +215,8 @@ int irc_process_msg(irc_session_t *s, irc_msg_t *m) { /* call the right event ha
 	int32_t cmd = WORDL(m->cmd[0], m->cmd[1], m->cmd[2], m->cmd[3]);
 	int ret = 0;
 
+
+	udebug("recived an even?? %s", m->cmd);
 	/* FIXME: check m->parameters_size for validity of messages, if it doesnt have a sufficent number of
 	 * arguemtns, don't pass it to the handlers */
 	switch(cmd) {
@@ -223,8 +224,8 @@ int irc_process_msg(irc_session_t *s, irc_msg_t *m) { /* call the right event ha
 
 			/* apparently some IRC servers require PONG :<param> and some require PONG <param>,
 			 * and some require both! */
-			if (s->event_handlers.ping_handler)
-				ret = s->event_handlers.ping_handler(s, m);
+			if (s->event_handlers.ping)
+				ret = s->event_handlers.ping(s, m->parameters[0]);
 			if (m->parameters_size > 1)
 				irc_send_raw(s, "PONG %s :%s\r\n", m->parameters[0], m->parameters[1]);
 			else
@@ -233,22 +234,21 @@ int irc_process_msg(irc_session_t *s, irc_msg_t *m) { /* call the right event ha
 
 
 		case WORDL('P', 'R', 'I', 'V'):
-			if (s->event_handlers.privmsg_handler)
-				ret = s->event_handlers.privmsg_handler(s, m);
+			if (s->event_handlers.privmsg) 
+				ret = s->event_handlers.privmsg(s, 
+						(m->parameters[0][0] == '#' ? m->parameters[0] : m->prefix_name),
+						m->parameters[1]);
 			break;
 
-		case WORDL('N', 'I', 'C', 'K'):
-			if (s->event_handlers.nick_handler)
-				ret = s->event_handlers.nick_handler(s, m);
-			break;
 
 		case WORDL('I', 'N', 'V', 'I'):
-			if (s->event_handlers.invite_handler)
-				ret = s->event_handlers.invite_handler(s, m);
+			if (s->event_handlers.invite)
+				ret = s->event_handlers.invite(s, m->parameters[1]);
 			break;
-		case WORDL('J', 'O', 'I', 'N'):
-			if (s->event_handlers.join_handler)
-				ret = s->event_handlers.join_handler(s, m);
+		
+		default: 
+			if (s->event_handlers.default_handler) 
+				ret = s->event_handlers.default_handler(s, m);
 			break;
 	}
 	return ret;

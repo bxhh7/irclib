@@ -30,15 +30,28 @@ typedef struct {
 } irc_msg_t;
 
 typedef struct irc_session irc_session_t;
-typedef int (*event_handler_t)(struct irc_session* , irc_msg_t*); /* event handlers must return 0 on success, and non-zero values on failure */
+/* event handlers must return 0 on success, and non-zero values on failure */
+/* chan is the channel we're invited to */
+typedef int (*irc_invite_handler_t)(irc_session_t* session, const char* chan);
+
+/* origin is the sender of the message, it could be a channel or a regular user or a service */
+typedef int (*irc_privmsg_handler_t)(irc_session_t* session, const char* origin, const char* text);
+
+/* param is the PING parameter */
+typedef int (*irc_ping_handler_t)(irc_session_t* session, const char* param);
+
+/* if the recived "event" matches none of the above, this handler will be called */
+typedef int (*irc_default_handler_t)(irc_session_t* session, irc_msg_t* msg);
+/* NOTE maybe we should pass the prefix too? */
+
 
 typedef struct {
-	event_handler_t privmsg_handler;
-	event_handler_t join_handler;
-	event_handler_t nick_handler;
-	event_handler_t ping_handler;
-	event_handler_t invite_handler;
+	irc_privmsg_handler_t privmsg;
+	irc_invite_handler_t invite;
+	irc_ping_handler_t ping;
+	irc_default_handler_t default_handler;
 } irc_event_handler_set_t;
+
 
 typedef struct irc_session{
 	char *server;
@@ -54,20 +67,6 @@ typedef struct irc_session{
 	irc_event_handler_set_t event_handlers;
 } irc_session_t;
 
-
-/* instances of irc_msg_t should ideally only be used through these macros. */
-/* PRIVMSG handler helper macros */
-#define IRC_PRIVMSG_IS_ORIGIN_CHANNEL(m)  m->parameters[0][0] == '#'
-#define IRC_PRIVMSG_ORIGIN(m) IRC_PRIVMSG_IS_ORIGIN_CHANNEL(m) ? m->parameters[0] : m->prefix_name
-#define IRC_PRIVMSG_MSG(m) m->parameters[1]
-
-/* INVITE handler helper macros */
-#define IRC_INVITE_CHANNEL(m) m->parameters[1]
-
-/* PING handler helper macros */
-#define IRC_PING_PARAMETER(m) m->parameters[0]
-
-/* more can(and should) be added as the need for handling other events arises. */
 
 /* functions */
 int irc_init_session(irc_session_t* s, const char* serv, const char* portno, const char* nick, const char* pass, irc_event_handler_set_t* es);
